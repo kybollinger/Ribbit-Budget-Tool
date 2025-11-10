@@ -59,7 +59,11 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         profilePicture: credential.picture,
       };
       
-      await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(mockUser));
+      const stringified = JSON.stringify(mockUser);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        throw new Error('Failed to serialize user data');
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
       return mockUser;
     },
     onSuccess: (data) => {
@@ -82,7 +86,11 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         provider: 'apple',
       };
       
-      await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(mockUser));
+      const stringified = JSON.stringify(mockUser);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        throw new Error('Failed to serialize user data');
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
       return mockUser;
     },
     onSuccess: (data) => {
@@ -116,7 +124,11 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         ...(streakData !== undefined && { streakData }),
       };
       
-      await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(updatedUser));
+      const stringified = JSON.stringify(updatedUser);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        throw new Error('Failed to serialize user data');
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
       return updatedUser;
     },
     onSuccess: (data) => {

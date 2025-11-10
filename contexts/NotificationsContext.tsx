@@ -163,7 +163,11 @@ export const [NotificationsProvider, useNotifications] = createContextHook(() =>
   const updateSettingsMutation = useMutation({
     mutationFn: async (updates: Partial<NotificationSettings>) => {
       const updated = { ...settings, ...updates };
-      await AsyncStorage.setItem(STORAGE_KEY_NOTIFICATIONS, JSON.stringify(updated));
+      const stringified = JSON.stringify(updated);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        throw new Error('Failed to serialize notification settings');
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_NOTIFICATIONS, stringified);
       return updated;
     },
     onSuccess: (updated) => {

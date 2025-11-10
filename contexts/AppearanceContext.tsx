@@ -203,9 +203,20 @@ export const [AppearanceProvider, useAppearance] = createContextHook(() => {
   const updateSettings = useCallback(async (updates: Partial<AppearanceSettings>) => {
     setSettings((prevSettings) => {
       const updated = { ...prevSettings, ...updates };
-      AsyncStorage.setItem(STORAGE_KEY_APPEARANCE, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save appearance settings:', err)
-      );
+      
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid data being saved, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_APPEARANCE, stringified).catch(err => 
+          console.error('Failed to save appearance settings:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify appearance settings:', err);
+      }
+      
       return updated;
     });
   }, []);

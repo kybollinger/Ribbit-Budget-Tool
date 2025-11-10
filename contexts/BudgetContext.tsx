@@ -189,7 +189,12 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
     
     if (hasChanges) {
       console.log('Saving updated transactions after processing recurring...');
-      await AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(updatedTransactions));
+      const stringified = JSON.stringify(updatedTransactions);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        console.error('Failed to serialize transactions data');
+        return;
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, stringified);
       setTransactions(updatedTransactions);
     }
     
@@ -211,9 +216,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
     
     setTransactions((prevTransactions) => {
       const updated = [...prevTransactions, newTransaction];
-      AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save transactions:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid transaction data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, stringified).catch(err => 
+          console.error('Failed to save transactions:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify transactions:', err);
+      }
       return updated;
     });
 
@@ -230,9 +244,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
       const updated = prevTransactions.map((t) => 
         t.id === id ? { ...t, ...updates } : t
       );
-      AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save transactions:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid transaction data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, stringified).catch(err => 
+          console.error('Failed to save transactions:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify transactions:', err);
+      }
       return updated;
     });
   }, []);
@@ -240,9 +263,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
   const deleteTransaction = useCallback((id: string) => {
     setTransactions((prevTransactions) => {
       const updated = prevTransactions.filter((t) => t.id !== id);
-      AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save transactions:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid transaction data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, stringified).catch(err => 
+          console.error('Failed to save transactions:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify transactions:', err);
+      }
       return updated;
     });
   }, []);
@@ -346,9 +378,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
         isActive: true,
       };
       const updated = [...prevCategories, newCategory];
-      AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save categories:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid category data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, stringified).catch(err => 
+          console.error('Failed to save categories:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify categories:', err);
+      }
       return updated;
     });
   }, []);
@@ -377,9 +418,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
       const updated = prevCategories.map((c) => 
         c.id === id ? { ...c, ...updates, name: updates.name?.trim() || c.name } : c
       );
-      AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save categories:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid category data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, stringified).catch(err => 
+          console.error('Failed to save categories:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify categories:', err);
+      }
       return updated;
     });
   }, []);
@@ -389,9 +439,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
       const updated = prevCategories.map((c) => 
         c.id === id ? { ...c, isActive: false } : c
       );
-      AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save categories:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid category data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, stringified).catch(err => 
+          console.error('Failed to save categories:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify categories:', err);
+      }
       return updated;
     });
   }, []);
@@ -404,9 +463,18 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
 
     setCategories((prevCategories) => {
       const updated = prevCategories.filter((c) => c.id !== id);
-      AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(updated)).catch(err => 
-        console.error('Failed to save categories:', err)
-      );
+      try {
+        const stringified = JSON.stringify(updated);
+        if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+          console.error('Invalid category data, skipping storage update');
+          return updated;
+        }
+        AsyncStorage.setItem(STORAGE_KEY_CATEGORIES, stringified).catch(err => 
+          console.error('Failed to save categories:', err)
+        );
+      } catch (err) {
+        console.error('Failed to stringify categories:', err);
+      }
       return updated;
     });
   }, [getCategoryTransactionCount]);
