@@ -253,14 +253,23 @@ export default function AccountScreen() {
               </View>
             </View>
 
-            {user.financeGoalNotes && user.financeGoalNotes.trim() !== '' && (
+            {user.financeGoals && user.financeGoals.length > 0 && (
               <View style={[styles.goalsCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
                 <Text style={[styles.goalsTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
                   Personal Finance Goals
                 </Text>
-                <Text style={[styles.goalsText, { fontSize: 15 * theme.textScale, color: theme.colors.text.secondary }]}>
-                  {user.financeGoalNotes}
-                </Text>
+                <View style={styles.goalsContainer}>
+                  {user.financeGoals.map((goal, index) => (
+                    <View key={index} style={styles.goalItem}>
+                      <Text style={[styles.goalLabel, { fontSize: 14 * theme.textScale, color: theme.colors.text.tertiary }]}>
+                        Goal {index + 1}
+                      </Text>
+                      <Text style={[styles.goalsText, { fontSize: 15 * theme.textScale, color: theme.colors.text.secondary }]}>
+                        {goal}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
 
@@ -508,6 +517,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700' as const,
     marginBottom: 8,
+  },
+  goalsContainer: {
+    gap: 20,
+  },
+  goalItem: {
+    gap: 6,
+  },
+  goalLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
   },
   goalsText: {
     fontSize: 15,

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,11 +21,13 @@ export default function EditProfileScreen() {
   const { user, updateProfile, isUpdatingProfile } = useAuth();
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
+  const [goals, setGoals] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
       setName(user.name);
       setNotes(user.financeGoalNotes || '');
+      setGoals(user.financeGoals || []);
     }
   }, [user]);
 
@@ -35,12 +37,30 @@ export default function EditProfileScreen() {
       return;
     }
     
+    const filteredGoals = goals.filter(g => g.trim() !== '');
+    
     updateProfile({ 
       name: name.trim(),
-      financeGoalNotes: notes.trim() 
+      financeGoalNotes: notes.trim(),
+      financeGoals: filteredGoals
     });
     
     router.back();
+  };
+
+  const addGoal = () => {
+    setGoals([...goals, '']);
+  };
+
+  const updateGoal = (index: number, value: string) => {
+    const newGoals = [...goals];
+    newGoals[index] = value;
+    setGoals(newGoals);
+  };
+
+  const removeGoal = (index: number) => {
+    const newGoals = goals.filter((_, i) => i !== index);
+    setGoals(newGoals);
   };
 
   return (
@@ -87,34 +107,65 @@ export default function EditProfileScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.label, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
-            Personal Finance Goals
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.label, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
+              Personal Finance Goals
+            </Text>
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: theme.accent.primary }]}
+              onPress={addGoal}
+              activeOpacity={0.7}
+            >
+              <Plus size={16} color="#fff" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
           <Text style={[styles.helperText, { fontSize: 12 * theme.textScale, color: theme.colors.text.tertiary }]}>
-            Add notes to help you stay focused on your financial objectives
+            Add specific goals to help you stay focused on your financial objectives
           </Text>
-          <TextInput
-            style={[
-              styles.notesInput,
-              {
-                fontSize: 16 * theme.textScale,
-                color: theme.colors.text.primary,
-                backgroundColor: theme.colors.cardBackground,
-                borderColor: theme.colors.border,
-              },
-            ]}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="e.g., Save $10,000 for emergency fund, Pay off credit card debt by end of year..."
-            placeholderTextColor={theme.colors.text.secondary}
-            multiline
-            numberOfLines={8}
-            textAlignVertical="top"
-            maxLength={1000}
-          />
-          <Text style={[styles.characterCount, { fontSize: 12 * theme.textScale, color: theme.colors.text.tertiary }]}>
-            {notes.length}/1000
-          </Text>
+          {goals.map((goal, index) => (
+            <View key={index} style={styles.goalInputContainer}>
+              <View style={styles.goalHeader}>
+                <Text style={[styles.goalNumber, { fontSize: 13 * theme.textScale, color: theme.colors.text.tertiary }]}>
+                  Goal {index + 1}
+                </Text>
+                {goals.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => removeGoal(index)}
+                    activeOpacity={0.7}
+                  >
+                    <Trash2 size={16} color="#EF4444" strokeWidth={2} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <TextInput
+                style={[
+                  styles.goalInput,
+                  {
+                    fontSize: 16 * theme.textScale,
+                    color: theme.colors.text.primary,
+                    backgroundColor: theme.colors.cardBackground,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+                value={goal}
+                onChangeText={(value) => updateGoal(index, value)}
+                placeholder="e.g., Save $10,000 for emergency fund"
+                placeholderTextColor={theme.colors.text.secondary}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                maxLength={200}
+              />
+            </View>
+          ))}
+          {goals.length === 0 && (
+            <View style={[styles.emptyState, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
+              <Text style={[styles.emptyStateText, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
+                No goals added yet. Tap the + button to add your first goal!
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -170,10 +221,57 @@ const styles = StyleSheet.create({
   section: {
     gap: 8,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   label: {
     fontSize: 14,
     fontWeight: '600' as const,
     marginBottom: 4,
+  },
+  addButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  goalInputContainer: {
+    gap: 8,
+    marginTop: 8,
+  },
+  goalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  goalNumber: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+  },
+  deleteButton: {
+    padding: 4,
+  },
+  goalInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    fontWeight: '500' as const,
+    minHeight: 80,
+  },
+  emptyState: {
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    textAlign: 'center',
   },
   helperText: {
     fontSize: 12,

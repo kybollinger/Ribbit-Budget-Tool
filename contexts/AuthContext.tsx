@@ -12,6 +12,7 @@ interface User {
   provider: 'google' | 'apple';
   profilePicture?: string;
   financeGoalNotes?: string;
+  financeGoals?: string[];
   streakData?: {
     currentStreak: number;
     lastTransactionDate?: string;
@@ -119,7 +120,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async ({ name, profilePicture, financeGoalNotes, streakData }: { name?: string; profilePicture?: string; financeGoalNotes?: string; streakData?: User['streakData'] }) => {
+    mutationFn: async ({ name, profilePicture, financeGoalNotes, financeGoals, streakData }: { name?: string; profilePicture?: string; financeGoalNotes?: string; financeGoals?: string[]; streakData?: User['streakData'] }) => {
       if (!user) throw new Error('No user to update');
       
       const updatedUser: User = {
@@ -127,6 +128,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         ...(name !== undefined && { name }),
         ...(profilePicture !== undefined && { profilePicture }),
         ...(financeGoalNotes !== undefined && { financeGoalNotes }),
+        ...(financeGoals !== undefined && { financeGoals }),
         ...(streakData !== undefined && { streakData }),
       };
       
