@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Target, Flame } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3 } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -227,14 +227,9 @@ export default function AccountScreen() {
             <View style={[styles.streakCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
               <View style={styles.streakContent}>
                 <View style={styles.streakInfo}>
-                  <View style={styles.streakHeader}>
-                    <View style={[styles.streakIconContainer, { backgroundColor: '#FF6B35' }]}>
-                      <Flame size={20} color="#fff" strokeWidth={2} />
-                    </View>
-                    <Text style={[styles.streakTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
-                      Daily Streak
-                    </Text>
-                  </View>
+                  <Text style={[styles.streakTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
+                    Daily Streak
+                  </Text>
                   <Text style={[styles.streakDays, { fontSize: 32 * theme.textScale, color: '#FF6B35' }]}>
                     {user.streakData?.currentStreak || 0}
                   </Text>
@@ -259,14 +254,9 @@ export default function AccountScreen() {
 
             {user.financeGoalNotes && user.financeGoalNotes.trim() !== '' && (
               <View style={[styles.goalsCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
-                <View style={styles.goalsHeader}>
-                  <View style={[styles.goalIconContainer, { backgroundColor: theme.accent.primaryLight }]}>
-                    <Target size={20} color={theme.accent.primary} strokeWidth={2} />
-                  </View>
-                  <Text style={[styles.goalsTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
-                    Personal Finance Goals
-                  </Text>
-                </View>
+                <Text style={[styles.goalsTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
+                  Personal Finance Goals
+                </Text>
                 <Text style={[styles.goalsText, { fontSize: 15 * theme.textScale, color: theme.colors.text.secondary }]}>
                   {user.financeGoalNotes}
                 </Text>
@@ -479,22 +469,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
   },
-  streakHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  streakIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   streakTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
+    marginBottom: 8,
   },
   streakDays: {
     fontSize: 32,
@@ -525,22 +503,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 16,
   },
-  goalsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  goalIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   goalsTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    flex: 1,
+    marginBottom: 8,
   },
   goalsText: {
     fontSize: 15,
