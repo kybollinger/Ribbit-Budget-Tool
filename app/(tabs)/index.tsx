@@ -84,8 +84,7 @@ export default function DashboardScreen() {
   }, [categoriesWithTotals, getCategorySpendingForMonth, selectedDateInfo]);
 
   const frogMascot = useMemo(() => {
-    const mascot = getFrogByBudgetStatus(monthlyIncome, monthlyExpenses, categoriesForBudgetCheck);
-    return mascot && mascot.uri ? mascot : { uri: '', name: 'Frog' };
+    return getFrogByBudgetStatus(monthlyIncome, monthlyExpenses, categoriesForBudgetCheck);
   }, [monthlyIncome, monthlyExpenses, categoriesForBudgetCheck]);
 
   if (isLoading) {
@@ -109,7 +108,7 @@ export default function DashboardScreen() {
             <Text style={[styles.headerSubtitle, { fontSize: 16 * theme.textScale, color: theme.colors.text.secondary }]}>Track every dollar</Text>
           </View>
           <View style={styles.frogIconContainer}>
-            {frogMascot.uri ? (
+            {frogMascot?.uri ? (
               <Image
                 source={{ uri: frogMascot.uri }}
                 style={[styles.frogIcon, { tintColor: theme.accent.primary }]}
