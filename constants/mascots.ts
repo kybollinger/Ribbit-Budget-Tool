@@ -139,7 +139,7 @@ export function getRandomFrogSad() {
 
 export const STREAK_WIZARD_FROG = {
   id: 'streak-wizard',
-  uri: 'https://r2-pub.rork.com/generated-images/88f674db-1527-4f53-822f-734e6dd21175.png',
+  uri: 'https://r2-pub.rork.com/generated-images/61d62311-0ce7-4042-a14f-4bea69e9435f.png',
   name: 'Streak Wizard Frog',
   expression: 'happy' as const,
 };
