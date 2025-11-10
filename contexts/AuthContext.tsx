@@ -98,6 +98,28 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: async ({ name, profilePicture }: { name?: string; profilePicture?: string }) => {
+      if (!user) throw new Error('No user to update');
+      
+      const updatedUser: User = {
+        ...user,
+        ...(name !== undefined && { name }),
+        ...(profilePicture !== undefined && { profilePicture }),
+      };
+      
+      await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(updatedUser));
+      return updatedUser;
+    },
+    onSuccess: (data) => {
+      setUser(data);
+      console.log('Profile updated:', data);
+    },
+    onError: (error) => {
+      console.error('Profile update error:', error);
+    },
+  });
+
   return {
     user,
     isAuthenticated: !!user,
@@ -105,7 +127,9 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     signInWithGoogle: signInWithGoogleMutation.mutate,
     signInWithApple: signInWithAppleMutation.mutate,
     signOut: signOutMutation.mutate,
+    updateProfile: updateProfileMutation.mutate,
     isSigningIn: signInWithGoogleMutation.isPending || signInWithAppleMutation.isPending,
     isSigningOut: signOutMutation.isPending,
+    isUpdatingProfile: updateProfileMutation.isPending,
   };
 });
