@@ -8,6 +8,7 @@ import { BudgetProvider } from "@/contexts/BudgetContext";
 import { AnalysisProvider } from "@/contexts/AnalysisContext";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
@@ -97,6 +98,12 @@ function RootLayoutNav() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="account"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }
@@ -145,15 +152,17 @@ export default function RootLayout() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <AppearanceProvider>
-          <NotificationsProvider>
-            <BudgetProvider>
-              <AnalysisProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
-              </AnalysisProvider>
-            </BudgetProvider>
-          </NotificationsProvider>
+          <AuthProvider>
+            <NotificationsProvider>
+              <BudgetProvider>
+                <AnalysisProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </AnalysisProvider>
+              </BudgetProvider>
+            </NotificationsProvider>
+          </AuthProvider>
         </AppearanceProvider>
       </QueryClientProvider>
     </trpc.Provider>

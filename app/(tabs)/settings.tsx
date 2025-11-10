@@ -76,11 +76,7 @@ export default function SettingsScreen() {
           label: 'Account',
           description: 'Sign up, log in, or manage your account',
           onPress: () => {
-            Alert.alert(
-              'Account Feature',
-              'Account management requires backend support. Please enable backend in the project settings to use this feature.',
-              [{ text: 'OK' }]
-            );
+            router.push('/account');
           },
         },
       ],
