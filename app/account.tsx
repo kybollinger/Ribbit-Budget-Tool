@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3 } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Target } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -221,6 +221,22 @@ export default function AccountScreen() {
               </View>
             </View>
 
+            {user.financeGoalNotes && user.financeGoalNotes.trim() !== '' && (
+              <View style={[styles.goalsCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
+                <View style={styles.goalsHeader}>
+                  <View style={[styles.goalIconContainer, { backgroundColor: theme.accent.primaryLight }]}>
+                    <Target size={20} color={theme.accent.primary} strokeWidth={2} />
+                  </View>
+                  <Text style={[styles.goalsTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
+                    Personal Finance Goals
+                  </Text>
+                </View>
+                <Text style={[styles.goalsText, { fontSize: 15 * theme.textScale, color: theme.colors.text.secondary }]}>
+                  {user.financeGoalNotes}
+                </Text>
+              </View>
+            )}
+
             <TouchableOpacity
               style={[styles.signOutButton, { backgroundColor: theme.colors.cardBackground, borderColor: '#EF4444' }]}
               onPress={handleSignOut}
@@ -410,6 +426,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600' as const,
     color: '#fff',
+  },
+  goalsCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 16,
+  },
+  goalsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  goalIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  goalsTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    flex: 1,
+  },
+  goalsText: {
+    fontSize: 15,
+    fontWeight: '500' as const,
+    lineHeight: 22,
   },
   signOutButton: {
     flexDirection: 'row',
