@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit2 } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3 } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -160,7 +160,7 @@ export default function AccountScreen() {
             onPress={() => router.push('/edit-profile')}
             activeOpacity={0.7}
           >
-            <Edit2 size={20} color={theme.accent.primary} strokeWidth={2} />
+            <Edit3 size={20} color={theme.accent.primary} strokeWidth={2} />
           </TouchableOpacity>
         ) : (
           <View style={styles.headerRight} />
