@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,17 +11,20 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Target } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Target, Flame } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
+import { getRandomFrogHappy } from '@/constants/mascots';
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useAppearance();
   const { user, isAuthenticated, signInWithGoogle, signInWithApple, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
   const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | null>(null);
+
+  const frogMascot = useMemo(() => getRandomFrogHappy(), [user?.streakData?.currentStreak]);
 
 
   const handleGoogleSignIn = async () => {
@@ -217,6 +220,39 @@ export default function AccountScreen() {
                   <Text style={[styles.providerText, { fontSize: 12 * theme.textScale }]}>
                     Signed in with {user.provider === 'google' ? 'Google' : 'Apple'}
                   </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={[styles.streakCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
+              <View style={styles.streakContent}>
+                <View style={styles.streakInfo}>
+                  <View style={styles.streakHeader}>
+                    <View style={[styles.streakIconContainer, { backgroundColor: '#FF6B35' }]}>
+                      <Flame size={20} color="#fff" strokeWidth={2} />
+                    </View>
+                    <Text style={[styles.streakTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
+                      Daily Streak
+                    </Text>
+                  </View>
+                  <Text style={[styles.streakDays, { fontSize: 32 * theme.textScale, color: '#FF6B35' }]}>
+                    {user.streakData?.currentStreak || 0}
+                  </Text>
+                  <Text style={[styles.streakLabel, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
+                    {(user.streakData?.currentStreak || 0) === 1 ? 'day' : 'days'} in a row!
+                  </Text>
+                  {(user.streakData?.longestStreak || 0) > 1 && (
+                    <Text style={[styles.streakBest, { fontSize: 13 * theme.textScale, color: theme.colors.text.tertiary }]}>
+                      Best: {user.streakData?.longestStreak} days
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.frogContainer}>
+                  <Image
+                    source={{ uri: frogMascot.uri }}
+                    style={styles.frogImage}
+                    contentFit="contain"
+                  />
                 </View>
               </View>
             </View>
@@ -426,6 +462,62 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600' as const,
     color: '#fff',
+  },
+  streakCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  streakContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  streakInfo: {
+    flex: 1,
+    gap: 8,
+  },
+  streakHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  streakIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  streakTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+  },
+  streakDays: {
+    fontSize: 32,
+    fontWeight: '800' as const,
+  },
+  streakLabel: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+  },
+  streakBest: {
+    fontSize: 13,
+    fontWeight: '500' as const,
+    marginTop: 4,
+  },
+  frogContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  frogImage: {
+    width: '100%',
+    height: '100%',
   },
   goalsCard: {
     padding: 20,

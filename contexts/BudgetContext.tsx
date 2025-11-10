@@ -4,12 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Transaction, Category, CategoryWithTotal } from '@/types/budget';
 import { DEFAULT_CATEGORIES } from '@/constants/defaultCategories';
+import { useAuth } from '@/contexts/AuthContext';
 
 const STORAGE_KEY_TRANSACTIONS = '@flow_transactions';
 const STORAGE_KEY_CATEGORIES = '@flow_categories';
 const STORAGE_KEY_LAST_CHECK = '@flow_last_recurring_check';
 
 export const [BudgetProvider, useBudget] = createContextHook(() => {
+  const { updateStreak, isAuthenticated } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -201,19 +203,27 @@ export const [BudgetProvider, useBudget] = createContextHook(() => {
   }, [processRecurringTransactions]);
 
   const addTransaction = useCallback((transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+    };
+    
     setTransactions((prevTransactions) => {
-      const newTransaction: Transaction = {
-        ...transaction,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-      };
       const updated = [...prevTransactions, newTransaction];
       AsyncStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(updated)).catch(err => 
         console.error('Failed to save transactions:', err)
       );
       return updated;
     });
-  }, []);
+
+    if (isAuthenticated && !transaction.recurring?.enabled) {
+      setTimeout(() => {
+        const result = updateStreak(newTransaction.date);
+        console.log('Streak updated:', result);
+      }, 100);
+    }
+  }, [isAuthenticated, updateStreak]);
 
   const updateTransaction = useCallback((id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => {
     setTransactions((prevTransactions) => {

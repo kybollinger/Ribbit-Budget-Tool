@@ -12,6 +12,11 @@ interface User {
   provider: 'google' | 'apple';
   profilePicture?: string;
   financeGoalNotes?: string;
+  streakData?: {
+    currentStreak: number;
+    lastTransactionDate?: string;
+    longestStreak: number;
+  };
 }
 
 export const [AuthProvider, useAuth] = createContextHook(() => {
@@ -100,7 +105,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async ({ name, profilePicture, financeGoalNotes }: { name?: string; profilePicture?: string; financeGoalNotes?: string }) => {
+    mutationFn: async ({ name, profilePicture, financeGoalNotes, streakData }: { name?: string; profilePicture?: string; financeGoalNotes?: string; streakData?: User['streakData'] }) => {
       if (!user) throw new Error('No user to update');
       
       const updatedUser: User = {
@@ -108,6 +113,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         ...(name !== undefined && { name }),
         ...(profilePicture !== undefined && { profilePicture }),
         ...(financeGoalNotes !== undefined && { financeGoalNotes }),
+        ...(streakData !== undefined && { streakData }),
       };
       
       await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(updatedUser));
@@ -122,6 +128,67 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     },
   });
 
+  const updateStreak = (transactionDate: string) => {
+    if (!user) return { isNewStreak: false, currentStreak: 0 };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const txDate = new Date(transactionDate);
+    txDate.setHours(0, 0, 0, 0);
+
+    const currentStreakData = user.streakData || {
+      currentStreak: 0,
+      longestStreak: 0,
+    };
+
+    const lastDate = currentStreakData.lastTransactionDate
+      ? new Date(currentStreakData.lastTransactionDate)
+      : null;
+    
+    if (lastDate) {
+      lastDate.setHours(0, 0, 0, 0);
+    }
+
+    if (lastDate && lastDate.getTime() === today.getTime()) {
+      return { isNewStreak: false, currentStreak: currentStreakData.currentStreak };
+    }
+
+    let newStreak = currentStreakData.currentStreak;
+    let isNewStreak = false;
+
+    if (!lastDate) {
+      newStreak = 1;
+      isNewStreak = true;
+    } else {
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastDate.getTime() === yesterday.getTime()) {
+        newStreak = currentStreakData.currentStreak + 1;
+        isNewStreak = true;
+      } else if (txDate.getTime() === today.getTime()) {
+        newStreak = 1;
+        isNewStreak = true;
+      } else {
+        newStreak = 1;
+        isNewStreak = false;
+      }
+    }
+
+    const longestStreak = Math.max(newStreak, currentStreakData.longestStreak);
+
+    const newStreakData = {
+      currentStreak: newStreak,
+      lastTransactionDate: today.toISOString(),
+      longestStreak,
+    };
+
+    updateProfileMutation.mutate({ streakData: newStreakData });
+
+    return { isNewStreak, currentStreak: newStreak };
+  };
+
   return {
     user,
     isAuthenticated: !!user,
@@ -130,6 +197,7 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     signInWithApple: signInWithAppleMutation.mutate,
     signOut: signOutMutation.mutate,
     updateProfile: updateProfileMutation.mutate,
+    updateStreak,
     isSigningIn: signInWithGoogleMutation.isPending || signInWithAppleMutation.isPending,
     isSigningOut: signOutMutation.isPending,
     isUpdatingProfile: updateProfileMutation.isPending,
