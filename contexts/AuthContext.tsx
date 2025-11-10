@@ -29,7 +29,13 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
         const stored = await AsyncStorage.getItem(STORAGE_KEY_AUTH);
         console.log('Loaded auth from storage:', stored ? 'found' : 'null');
         
-        if (!stored) {
+        if (!stored || stored === 'null' || stored === 'undefined') {
+          return null;
+        }
+        
+        if (stored.startsWith('[object')) {
+          console.error('Invalid data format detected:', stored);
+          await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
           return null;
         }
         
