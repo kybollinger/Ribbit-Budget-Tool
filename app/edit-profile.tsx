@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,6 +24,8 @@ export default function EditProfileScreen() {
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [goals, setGoals] = useState<string[]>([]);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const goalInputRefs = useRef<{ [key: number]: TextInput | null }>({});
 
   useEffect(() => {
     if (user) {
@@ -84,13 +86,15 @@ export default function EditProfileScreen() {
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
       >
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scrollView}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
         <View style={styles.section}>
           <Text style={[styles.label, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
@@ -147,6 +151,7 @@ export default function EditProfileScreen() {
                 )}
               </View>
               <TextInput
+                ref={(ref) => (goalInputRefs.current[index] = ref)}
                 style={[
                   styles.goalInput,
                   {
@@ -164,6 +169,20 @@ export default function EditProfileScreen() {
                 numberOfLines={3}
                 textAlignVertical="top"
                 maxLength={200}
+                onFocus={() => {
+                  setTimeout(() => {
+                    goalInputRefs.current[index]?.measureLayout(
+                      scrollViewRef.current as any,
+                      (x, y) => {
+                        scrollViewRef.current?.scrollTo({
+                          y: y - 100,
+                          animated: true,
+                        });
+                      },
+                      () => {}
+                    );
+                  }, 100);
+                }}
               />
             </View>
           ))}
