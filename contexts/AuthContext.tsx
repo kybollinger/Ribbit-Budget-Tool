@@ -11,6 +11,7 @@ interface User {
   name: string;
   provider: 'google' | 'apple';
   profilePicture?: string;
+  financeGoalNotes?: string;
 }
 
 export const [AuthProvider, useAuth] = createContextHook(() => {
@@ -99,13 +100,14 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async ({ name, profilePicture }: { name?: string; profilePicture?: string }) => {
+    mutationFn: async ({ name, profilePicture, financeGoalNotes }: { name?: string; profilePicture?: string; financeGoalNotes?: string }) => {
       if (!user) throw new Error('No user to update');
       
       const updatedUser: User = {
         ...user,
         ...(name !== undefined && { name }),
         ...(profilePicture !== undefined && { profilePicture }),
+        ...(financeGoalNotes !== undefined && { financeGoalNotes }),
       };
       
       await AsyncStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(updatedUser));
