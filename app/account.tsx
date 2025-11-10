@@ -230,7 +230,7 @@ export default function AccountScreen() {
                   <Text style={[styles.streakTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
                     Daily Streak
                   </Text>
-                  <Text style={[styles.streakDays, { fontSize: 32 * theme.textScale, color: '#FF6B35' }]}>
+                  <Text style={[styles.streakDays, { fontSize: 32 * theme.textScale, color: theme.accent.primary }]}>
                     {user.streakData?.currentStreak || 0}
                   </Text>
                   <Text style={[styles.streakLabel, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
@@ -247,6 +247,7 @@ export default function AccountScreen() {
                     source={{ uri: frogMascot.uri }}
                     style={styles.frogImage}
                     contentFit="contain"
+                    tint={theme.accent.primary}
                   />
                 </View>
               </View>
