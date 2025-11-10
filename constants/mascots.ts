@@ -137,6 +137,13 @@ export function getRandomFrogSad() {
   return FROG_MASCOTS_SAD[randomIndex];
 }
 
+export const STREAK_WIZARD_FROG = {
+  id: 'streak-wizard',
+  uri: 'https://r2-pub.rork.com/generated-images/88f674db-1527-4f53-822f-734e6dd21175.png',
+  name: 'Streak Wizard Frog',
+  expression: 'happy' as const,
+};
+
 export type BudgetPerformance = {
   status: 'excellent' | 'good' | 'warning' | 'critical';
   percentageUsed: number;

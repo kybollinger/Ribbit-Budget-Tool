@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import { getRandomFrogHappy } from '@/constants/mascots';
+import { STREAK_WIZARD_FROG } from '@/constants/mascots';
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
@@ -24,7 +24,7 @@ export default function AccountScreen() {
   const { user, isAuthenticated, signInWithGoogle, signInWithApple, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
   const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | null>(null);
 
-  const frogMascot = useMemo(() => getRandomFrogHappy(), [user?.streakData?.currentStreak]);
+  const frogMascot = STREAK_WIZARD_FROG;
 
 
   const handleGoogleSignIn = async () => {
@@ -247,7 +247,7 @@ export default function AccountScreen() {
                     source={{ uri: frogMascot.uri }}
                     style={styles.frogImage}
                     contentFit="contain"
-                    tint={theme.accent.primary}
+                    tintColor={theme.accent.primary}
                   />
                 </View>
               </View>
