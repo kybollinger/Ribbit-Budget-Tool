@@ -180,7 +180,7 @@ export default function AccountScreen() {
             <View style={[styles.profileCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
               <View style={styles.avatarWrapper}>
                 <View style={[styles.avatarContainer, { backgroundColor: theme.accent.primaryLight }]}>
-                  {user.profilePicture ? (
+                  {user.profilePicture && user.profilePicture.trim() !== '' ? (
                     <Image
                       source={{ uri: user.profilePicture }}
                       style={styles.avatarImage}
@@ -243,12 +243,14 @@ export default function AccountScreen() {
                   )}
                 </View>
                 <View style={styles.frogContainer}>
-                  <Image
-                    source={{ uri: frogMascot.uri }}
-                    style={styles.frogImage}
-                    contentFit="contain"
-                    tintColor={theme.accent.primary}
-                  />
+                  {frogMascot?.uri && frogMascot.uri.trim() !== '' && (
+                    <Image
+                      source={{ uri: frogMascot.uri }}
+                      style={styles.frogImage}
+                      contentFit="contain"
+                      tintColor={theme.accent.primary}
+                    />
+                  )}
                 </View>
               </View>
             </View>
