@@ -205,7 +205,7 @@ export default function AccountScreen() {
       saveBankConnection({
         accessToken: result.accessToken,
         itemId: result.itemId,
-        institutionName: result.institutionName,
+        institutionName: metadata.institution?.name || result.institutionName,
         institutionId: metadata.institution?.institution_id || '',
         accounts: metadata.accounts || [],
       });
@@ -425,7 +425,7 @@ export default function AccountScreen() {
                             {connection.accounts[0]?.institutionName || 'Bank Account'}
                           </Text>
                           <Text style={[styles.connectedBankAccount, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
-                            {connection.accounts[0]?.accountName || ''} ••{connection.accounts[0]?.accountMask || '****'}
+                            {connection.accounts[0]?.accountName || ''} {connection.accounts[0]?.accountMask ? `••${connection.accounts[0].accountMask}` : ''}
                           </Text>
                         </View>
                       </View>
