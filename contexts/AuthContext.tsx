@@ -28,22 +28,43 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     queryFn: async () => {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEY_AUTH);
-        console.log('Loaded auth from storage:', stored ? 'found' : 'null');
+        console.log('Loaded auth from storage:', stored ? `found (${stored.substring(0, 50)}...)` : 'null');
         
-        if (!stored || stored === 'null' || stored === 'undefined') {
+        if (!stored || stored === 'null' || stored === 'undefined' || stored.trim() === '') {
+          console.log('No valid stored data found');
           return null;
         }
         
-        if (stored.startsWith('[object')) {
-          console.error('Invalid data format detected:', stored);
+        if (stored.startsWith('[object') || stored === '[object Object]') {
+          console.error('Invalid data format detected (object toString):', stored.substring(0, 100));
           await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
           return null;
         }
         
-        const parsed = JSON.parse(stored);
-        return parsed as User;
+        try {
+          const parsed = JSON.parse(stored);
+          
+          if (!parsed || typeof parsed !== 'object') {
+            console.error('Parsed data is not an object:', typeof parsed);
+            await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
+            return null;
+          }
+          
+          if (!parsed.id || !parsed.email || !parsed.name) {
+            console.error('Parsed data is missing required fields:', parsed);
+            await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
+            return null;
+          }
+          
+          console.log('Successfully loaded user:', parsed.email);
+          return parsed as User;
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError, 'Data:', stored.substring(0, 100));
+          await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
+          return null;
+        }
       } catch (error) {
-        console.error('Error loading auth:', error);
+        console.error('Error loading auth (outer catch):', error);
         await AsyncStorage.removeItem(STORAGE_KEY_AUTH);
         return null;
       }
@@ -160,26 +181,51 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
       if (name !== undefined) updates.name = name;
       if (profilePicture !== undefined) updates.profilePicture = profilePicture;
       if (financeGoalNotes !== undefined) updates.financeGoalNotes = financeGoalNotes;
-      if (financeGoals !== undefined) updates.financeGoals = financeGoals;
-      if (streakData !== undefined) updates.streakData = streakData;
+      if (financeGoals !== undefined) {
+        if (!Array.isArray(financeGoals)) {
+          console.error('financeGoals is not an array:', financeGoals);
+          throw new Error('financeGoals must be an array');
+        }
+        updates.financeGoals = financeGoals;
+      }
+      if (streakData !== undefined) {
+        if (typeof streakData !== 'object' || streakData === null) {
+          console.error('streakData is invalid:', streakData);
+          throw new Error('streakData must be an object');
+        }
+        updates.streakData = streakData;
+      }
       
       const updatedUser: User = {
         ...user,
         ...updates,
       };
       
-      console.log('Attempting to save user:', updatedUser);
+      console.log('Attempting to save user:', JSON.stringify(updatedUser, null, 2));
       
-      const stringified = JSON.stringify(updatedUser);
-      console.log('Stringified user data:', stringified.substring(0, 100));
+      let stringified: string;
+      try {
+        stringified = JSON.stringify(updatedUser);
+      } catch (e) {
+        console.error('JSON.stringify failed:', e, updatedUser);
+        throw new Error('Failed to serialize user data: ' + e);
+      }
+      
+      console.log('Stringified user data length:', stringified.length);
       
       if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
         console.error('Invalid stringified data:', stringified);
-        throw new Error('Failed to serialize user data');
+        throw new Error('Failed to serialize user data - invalid format');
       }
       
-      await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
-      console.log('User data saved successfully');
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
+        console.log('User data saved successfully');
+      } catch (e) {
+        console.error('AsyncStorage.setItem failed:', e);
+        throw new Error('Failed to save user data: ' + e);
+      }
+      
       return updatedUser;
     },
     onSuccess: (data) => {
