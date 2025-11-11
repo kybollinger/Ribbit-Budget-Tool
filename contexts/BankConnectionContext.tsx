@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
 const STORAGE_KEY_BANK = '@flow_bank_connection';
+const STORAGE_KEY_AUTO_MODE = '@flow_automatic_mode';
 
 interface BankAccount {
   id: string;
@@ -28,6 +29,26 @@ interface BankConnection {
 export const [BankConnectionProvider, useBankConnection] = createContextHook(() => {
   const { user } = useAuth();
   const [connection, setConnection] = useState<BankConnection | null>(null);
+  const [automaticMode, setAutomaticMode] = useState<boolean>(false);
+
+  const autoModeQuery = useQuery({
+    queryKey: ['automatic-mode', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_AUTO_MODE);
+        if (!stored || stored === 'null' || stored === 'undefined') {
+          return false;
+        }
+        return stored === 'true';
+      } catch (error) {
+        console.error('Error loading automatic mode:', error);
+        return false;
+      }
+    },
+    enabled: !!user,
+  });
 
   const bankQuery = useQuery({
     queryKey: ['bank-connection', user?.id],
@@ -62,6 +83,12 @@ export const [BankConnectionProvider, useBankConnection] = createContextHook(() 
       setConnection(bankQuery.data);
     }
   }, [bankQuery.data]);
+
+  useEffect(() => {
+    if (autoModeQuery.data !== undefined) {
+      setAutomaticMode(autoModeQuery.data);
+    }
+  }, [autoModeQuery.data]);
 
   const saveBankConnectionMutation = useMutation({
     mutationFn: async (params: {
@@ -110,10 +137,23 @@ export const [BankConnectionProvider, useBankConnection] = createContextHook(() 
   const removeBankConnectionMutation = useMutation({
     mutationFn: async () => {
       await AsyncStorage.removeItem(STORAGE_KEY_BANK);
+      await AsyncStorage.setItem(STORAGE_KEY_AUTO_MODE, 'false');
     },
     onSuccess: () => {
       setConnection(null);
+      setAutomaticMode(false);
       console.log('Bank connection removed');
+    },
+  });
+
+  const setAutomaticModeMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      await AsyncStorage.setItem(STORAGE_KEY_AUTO_MODE, enabled.toString());
+      return enabled;
+    },
+    onSuccess: (enabled) => {
+      setAutomaticMode(enabled);
+      console.log('Automatic mode updated:', enabled);
     },
   });
 
@@ -127,10 +167,12 @@ export const [BankConnectionProvider, useBankConnection] = createContextHook(() 
   return useMemo(() => ({
     connection,
     isConnected: !!connection,
-    isLoading: bankQuery.isLoading,
+    automaticMode,
+    isLoading: bankQuery.isLoading || autoModeQuery.isLoading,
     saveBankConnection: saveBankConnectionMutation.mutate,
     removeBankConnection: removeBankConnectionMutation.mutate,
+    setAutomaticMode: setAutomaticModeMutation.mutate,
     isSaving: saveBankConnectionMutation.isPending,
     isRemoving: removeBankConnectionMutation.isPending,
-  }), [connection, bankQuery.isLoading, saveBankConnectionMutation.mutate, saveBankConnectionMutation.isPending, removeBankConnectionMutation.mutate, removeBankConnectionMutation.isPending]);
+  }), [connection, automaticMode, bankQuery.isLoading, autoModeQuery.isLoading, saveBankConnectionMutation.mutate, saveBankConnectionMutation.isPending, removeBankConnectionMutation.mutate, removeBankConnectionMutation.isPending, setAutomaticModeMutation.mutate]);
 });

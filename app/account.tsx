@@ -28,11 +28,10 @@ export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useAppearance();
   const { user, isAuthenticated, signInWithGoogle, signInWithApple, signUpWithEmail, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
-  const { connection, isConnected, saveBankConnection, removeBankConnection, isSaving, isRemoving } = useBankConnection();
+  const { connection, isConnected, automaticMode, saveBankConnection, removeBankConnection, setAutomaticMode, isSaving, isRemoving } = useBankConnection();
   const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | 'email' | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [automaticMode, setAutomaticMode] = useState(false);
   const [showPlaidModal, setShowPlaidModal] = useState(false);
   const [linkToken, setLinkToken] = useState('');
 
@@ -383,7 +382,9 @@ export default function AccountScreen() {
                 <Switch
                   value={automaticMode}
                   onValueChange={(value) => {
-                    setAutomaticMode(value);
+                    if (setAutomaticMode) {
+                      setAutomaticMode(value);
+                    }
                     if (!value && isConnected) {
                       handleDisconnectBank();
                     }
