@@ -9,6 +9,7 @@ import { AnalysisProvider } from "@/contexts/AnalysisContext";
 import { AppearanceProvider } from "@/contexts/AppearanceContext";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { BankConnectionProvider } from "@/contexts/BankConnectionContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
@@ -159,15 +160,17 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <AppearanceProvider>
           <AuthProvider>
-            <NotificationsProvider>
-              <BudgetProvider>
-                <AnalysisProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
-                </AnalysisProvider>
-              </BudgetProvider>
-            </NotificationsProvider>
+            <BankConnectionProvider>
+              <NotificationsProvider>
+                <BudgetProvider>
+                  <AnalysisProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootLayoutNav />
+                    </GestureHandlerRootView>
+                  </AnalysisProvider>
+                </BudgetProvider>
+              </NotificationsProvider>
+            </BankConnectionProvider>
           </AuthProvider>
         </AppearanceProvider>
       </QueryClientProvider>

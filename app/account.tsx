@@ -14,21 +14,30 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Mail, Landmark } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Mail, Landmark, XCircle } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBankConnection } from '@/contexts/BankConnectionContext';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { STREAK_WIZARD_FROG } from '@/constants/mascots';
+import PlaidLink from '@/components/PlaidLink';
+import { trpc } from '@/lib/trpc';
 
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useAppearance();
   const { user, isAuthenticated, signInWithGoogle, signInWithApple, signUpWithEmail, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
+  const { connection, isConnected, saveBankConnection, removeBankConnection, isSaving, isRemoving } = useBankConnection();
   const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | 'email' | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [automaticMode, setAutomaticMode] = useState(false);
+  const [showPlaidModal, setShowPlaidModal] = useState(false);
+  const [linkToken, setLinkToken] = useState('');
+
+  const createLinkTokenMutation = trpc.plaid.createLinkToken.useMutation();
+  const exchangeTokenMutation = trpc.plaid.exchangeToken.useMutation();
 
   const frogMascot = STREAK_WIZARD_FROG;
 
@@ -166,16 +175,60 @@ export default function AccountScreen() {
     }
   };
 
-  const handleConnectBank = () => {
+  const handleConnectBank = async () => {
+    if (!user) return;
+    
+    try {
+      const result = await createLinkTokenMutation.mutateAsync({
+        userId: user.id,
+      });
+      
+      setLinkToken(result.linkToken);
+      setShowPlaidModal(true);
+    } catch (error) {
+      console.error('Error creating link token:', error);
+      Alert.alert('Error', 'Failed to initialize bank connection. Please try again.');
+    }
+  };
+
+  const handlePlaidSuccess = async (publicToken: string, metadata: any) => {
+    if (!user) return;
+    
+    try {
+      const result = await exchangeTokenMutation.mutateAsync({
+        publicToken,
+        userId: user.id,
+        institutionName: metadata.institution?.name,
+        accountId: metadata.accounts?.[0]?.id,
+      });
+      
+      saveBankConnection({
+        accessToken: result.accessToken,
+        itemId: result.itemId,
+        institutionName: result.institutionName,
+        institutionId: metadata.institution?.institution_id || '',
+        accounts: metadata.accounts || [],
+      });
+      
+      Alert.alert('Success!', `Your ${result.institutionName} account has been connected.`);
+    } catch (error) {
+      console.error('Error exchanging token:', error);
+      Alert.alert('Error', 'Failed to complete bank connection. Please try again.');
+    }
+  };
+
+  const handleDisconnectBank = () => {
     Alert.alert(
-      'Connect Bank Account',
-      'This feature would integrate with a banking API (like Plaid) to automatically sync your transactions. This is a demo version.',
+      'Disconnect Bank',
+      'Are you sure you want to disconnect your bank account? This will stop automatic transaction syncing.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Continue',
+          text: 'Disconnect',
+          style: 'destructive',
           onPress: () => {
-            Alert.alert('Success', 'Bank connection flow would open here in a production app.');
+            removeBankConnection();
+            setAutomaticMode(false);
           },
         },
       ]
@@ -329,26 +382,80 @@ export default function AccountScreen() {
                 </View>
                 <Switch
                   value={automaticMode}
-                  onValueChange={setAutomaticMode}
+                  onValueChange={(value) => {
+                    setAutomaticMode(value);
+                    if (!value && isConnected) {
+                      handleDisconnectBank();
+                    }
+                  }}
                   trackColor={{ false: theme.colors.border, true: theme.accent.primary }}
                   thumbColor="#fff"
                   ios_backgroundColor={theme.colors.border}
                 />
               </View>
 
-              {automaticMode && (
+              {automaticMode && !isConnected && (
                 <TouchableOpacity
                   style={[styles.connectBankButton, { backgroundColor: theme.accent.primary }]}
                   onPress={handleConnectBank}
                   activeOpacity={0.8}
+                  disabled={createLinkTokenMutation.isPending}
                 >
-                  <Landmark size={20} color="#fff" strokeWidth={2} />
-                  <Text style={[styles.connectBankText, { fontSize: 16 * theme.textScale }]}>
-                    Connect Bank Account
-                  </Text>
+                  {createLinkTokenMutation.isPending ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Landmark size={20} color="#fff" strokeWidth={2} />
+                      <Text style={[styles.connectBankText, { fontSize: 16 * theme.textScale }]}>
+                        Connect Bank Account
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               )}
+
+              {automaticMode && isConnected && connection && (
+                <View style={styles.connectedBankInfo}>
+                  <View style={[styles.connectedBankCard, { backgroundColor: theme.accent.primaryLight }]}>
+                    <View style={styles.connectedBankHeader}>
+                      <View style={styles.connectedBankDetails}>
+                        <Landmark size={24} color={theme.accent.primary} strokeWidth={2} />
+                        <View style={styles.connectedBankText}>
+                          <Text style={[styles.connectedBankName, { fontSize: 16 * theme.textScale, color: theme.colors.text.primary }]}>
+                            {connection.accounts[0]?.institutionName || 'Bank Account'}
+                          </Text>
+                          <Text style={[styles.connectedBankAccount, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
+                            {connection.accounts[0]?.accountName || ''} ••{connection.accounts[0]?.accountMask || '****'}
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        onPress={handleDisconnectBank}
+                        disabled={isRemoving}
+                        activeOpacity={0.7}
+                      >
+                        {isRemoving ? (
+                          <ActivityIndicator size="small" color={theme.colors.text.tertiary} />
+                        ) : (
+                          <XCircle size={24} color={theme.colors.text.tertiary} strokeWidth={2} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <Text style={[styles.syncedText, { fontSize: 13 * theme.textScale, color: theme.colors.text.tertiary }]}>
+                    Connected on {new Date(connection.connectedAt).toLocaleDateString()}
+                  </Text>
+                </View>
+              )}
             </View>
+
+            <PlaidLink
+              visible={showPlaidModal}
+              onClose={() => setShowPlaidModal(false)}
+              onSuccess={handlePlaidSuccess}
+              onExit={() => setShowPlaidModal(false)}
+              linkToken={linkToken}
+            />
 
             <TouchableOpacity
               style={[styles.signOutButton, { backgroundColor: theme.colors.cardBackground, borderColor: '#EF4444' }]}
@@ -832,5 +939,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600' as const,
     color: '#fff',
+  },
+  connectedBankInfo: {
+    gap: 8,
+  },
+  connectedBankCard: {
+    padding: 16,
+    borderRadius: 12,
+  },
+  connectedBankHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  connectedBankDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  connectedBankText: {
+    gap: 4,
+    flex: 1,
+  },
+  connectedBankName: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+  },
+  connectedBankAccount: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+  },
+  syncedText: {
+    fontSize: 13,
+    fontWeight: '500' as const,
+    textAlign: 'center',
   },
 });
