@@ -9,7 +9,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  provider: 'google' | 'apple';
+  provider: 'google' | 'apple' | 'email';
   profilePicture?: string;
   financeGoalNotes?: string;
   financeGoals?: string[];
@@ -106,6 +106,39 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     },
     onError: (error) => {
       console.error('Apple sign-in error:', error);
+    },
+  });
+
+  const signUpWithEmailMutation = useMutation({
+    mutationFn: async (params: { name: string; email: string }) => {
+      if (!params.name || !params.email) {
+        throw new Error('Name and email are required');
+      }
+      
+      if (!params.email.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
+      
+      const mockUser: User = {
+        id: Date.now().toString(),
+        email: params.email,
+        name: params.name,
+        provider: 'email',
+      };
+      
+      const stringified = JSON.stringify(mockUser);
+      if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        throw new Error('Failed to serialize user data');
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
+      return mockUser;
+    },
+    onSuccess: (data) => {
+      setUser(data);
+      console.log('Signed up with email:', data);
+    },
+    onError: (error) => {
+      console.error('Email sign-up error:', error);
     },
   });
 
@@ -225,10 +258,11 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     isLoading: authQuery.isLoading,
     signInWithGoogle: signInWithGoogleMutation.mutate,
     signInWithApple: signInWithAppleMutation.mutate,
+    signUpWithEmail: signUpWithEmailMutation.mutate,
     signOut: signOutMutation.mutate,
     updateProfile: updateProfileMutation.mutate,
     updateStreak,
-    isSigningIn: signInWithGoogleMutation.isPending || signInWithAppleMutation.isPending,
+    isSigningIn: signInWithGoogleMutation.isPending || signInWithAppleMutation.isPending || signUpWithEmailMutation.isPending,
     isSigningOut: signOutMutation.isPending,
     isUpdatingProfile: updateProfileMutation.isPending,
   };

@@ -8,10 +8,12 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3 } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Mail } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,8 +23,10 @@ import { STREAK_WIZARD_FROG } from '@/constants/mascots';
 export default function AccountScreen() {
   const insets = useSafeAreaInsets();
   const { theme } = useAppearance();
-  const { user, isAuthenticated, signInWithGoogle, signInWithApple, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
-  const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | null>(null);
+  const { user, isAuthenticated, signInWithGoogle, signInWithApple, signUpWithEmail, signOut, updateProfile, isSigningIn, isSigningOut, isUpdatingProfile } = useAuth();
+  const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | 'email' | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
   const frogMascot = STREAK_WIZARD_FROG;
 
@@ -99,6 +103,24 @@ export default function AccountScreen() {
       Alert.alert('Error', 'Failed to sign in with Apple. Please try again.');
       setSigningInWith(null);
     }
+  };
+
+  const handleEmailSignUp = () => {
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please enter your name');
+      return;
+    }
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+    if (!email.includes('@')) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+    
+    setSigningInWith('email');
+    signUpWithEmail({ name: name.trim(), email: email.trim().toLowerCase() });
   };
 
   const handleSignOut = () => {
@@ -211,14 +233,16 @@ export default function AccountScreen() {
                 <Text style={[styles.userEmail, { fontSize: 16 * theme.textScale, color: theme.colors.text.secondary }]}>
                   {user.email}
                 </Text>
-                <View style={[styles.providerBadge, { backgroundColor: user.provider === 'google' ? '#4285F4' : '#000' }]}>
+                <View style={[styles.providerBadge, { backgroundColor: user.provider === 'google' ? '#4285F4' : user.provider === 'apple' ? '#000' : theme.accent.primary }]}>
                   {user.provider === 'google' ? (
                     <Chrome size={14} color="#fff" strokeWidth={2} />
-                  ) : (
+                  ) : user.provider === 'apple' ? (
                     <AppleIcon size={14} color="#fff" strokeWidth={2} />
+                  ) : (
+                    <Mail size={14} color="#fff" strokeWidth={2} />
                   )}
                   <Text style={[styles.providerText, { fontSize: 12 * theme.textScale }]}>
-                    Signed in with {user.provider === 'google' ? 'Google' : 'Apple'}
+                    Signed in with {user.provider === 'google' ? 'Google' : user.provider === 'apple' ? 'Apple' : 'Email'}
                   </Text>
                 </View>
               </View>
@@ -292,6 +316,10 @@ export default function AccountScreen() {
             </TouchableOpacity>
           </View>
         ) : (
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
           <View style={styles.unauthenticatedContainer}>
             <View style={[styles.welcomeCard, { backgroundColor: theme.accent.primaryLight }]}>
               <User size={60} color={theme.accent.primary} strokeWidth={2} />
@@ -307,6 +335,55 @@ export default function AccountScreen() {
               <Text style={[styles.signInTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
                 Create an Account
               </Text>
+              
+              <View style={[styles.emailSignUpForm, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
+                <TextInput
+                  style={[styles.input, { fontSize: 16 * theme.textScale, color: theme.colors.text.primary, borderColor: theme.colors.border, backgroundColor: theme.colors.background }]}
+                  placeholder="Your name"
+                  placeholderTextColor={theme.colors.text.tertiary}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  editable={!isSigningIn}
+                />
+                <TextInput
+                  style={[styles.input, { fontSize: 16 * theme.textScale, color: theme.colors.text.primary, borderColor: theme.colors.border, backgroundColor: theme.colors.background }]}
+                  placeholder="your.email@example.com"
+                  placeholderTextColor={theme.colors.text.tertiary}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  editable={!isSigningIn}
+                />
+                <TouchableOpacity
+                  style={[styles.emailSignUpButton, { backgroundColor: theme.accent.primary }]}
+                  onPress={handleEmailSignUp}
+                  disabled={isSigningIn}
+                  activeOpacity={0.8}
+                >
+                  {signingInWith === 'email' ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Mail size={20} color="#fff" strokeWidth={2} />
+                      <Text style={[styles.emailSignUpButtonText, { fontSize: 16 * theme.textScale }]}>
+                        Create Account
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.dividerContainer}>
+                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+                <Text style={[styles.dividerText, { fontSize: 14 * theme.textScale, color: theme.colors.text.tertiary }]}>
+                  or continue with
+                </Text>
+                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+              </View>
               
               <TouchableOpacity
                 style={[
@@ -361,6 +438,7 @@ export default function AccountScreen() {
               </Text>
             </View>
           </View>
+          </KeyboardAvoidingView>
         )}
       </ScrollView>
     </View>
@@ -623,5 +701,47 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  emailSignUpForm: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    fontWeight: '500' as const,
+  },
+  emailSignUpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 50,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  emailSignUpButtonText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#fff',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 8,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    fontSize: 14,
+    fontWeight: '500' as const,
   },
 });
