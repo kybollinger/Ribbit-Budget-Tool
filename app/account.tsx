@@ -10,10 +10,11 @@ import {
   Platform,
   TextInput,
   KeyboardAvoidingView,
+  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Mail } from 'lucide-react-native';
+import { ArrowLeft, User, LogOut, Chrome, Apple as AppleIcon, Camera, Edit3, Mail, Landmark } from 'lucide-react-native';
 import { useAppearance } from '@/contexts/AppearanceContext';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -27,6 +28,7 @@ export default function AccountScreen() {
   const [signingInWith, setSigningInWith] = useState<'google' | 'apple' | 'email' | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [automaticMode, setAutomaticMode] = useState(false);
 
   const frogMascot = STREAK_WIZARD_FROG;
 
@@ -164,6 +166,22 @@ export default function AccountScreen() {
     }
   };
 
+  const handleConnectBank = () => {
+    Alert.alert(
+      'Connect Bank Account',
+      'This feature would integrate with a banking API (like Plaid) to automatically sync your transactions. This is a demo version.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          onPress: () => {
+            Alert.alert('Success', 'Bank connection flow would open here in a production app.');
+          },
+        },
+      ]
+    );
+  };
+
 
 
   return (
@@ -298,6 +316,39 @@ export default function AccountScreen() {
                 </View>
               </View>
             )}
+
+            <View style={[styles.automaticModeCard, { backgroundColor: theme.colors.cardBackground, borderColor: theme.colors.border }]}>
+              <View style={styles.automaticModeHeader}>
+                <View style={styles.automaticModeInfo}>
+                  <Text style={[styles.automaticModeTitle, { fontSize: 18 * theme.textScale, color: theme.colors.text.primary }]}>
+                    Automatic Mode
+                  </Text>
+                  <Text style={[styles.automaticModeDescription, { fontSize: 14 * theme.textScale, color: theme.colors.text.secondary }]}>
+                    Sync transactions from your bank automatically
+                  </Text>
+                </View>
+                <Switch
+                  value={automaticMode}
+                  onValueChange={setAutomaticMode}
+                  trackColor={{ false: theme.colors.border, true: theme.accent.primary }}
+                  thumbColor="#fff"
+                  ios_backgroundColor={theme.colors.border}
+                />
+              </View>
+
+              {automaticMode && (
+                <TouchableOpacity
+                  style={[styles.connectBankButton, { backgroundColor: theme.accent.primary }]}
+                  onPress={handleConnectBank}
+                  activeOpacity={0.8}
+                >
+                  <Landmark size={20} color="#fff" strokeWidth={2} />
+                  <Text style={[styles.connectBankText, { fontSize: 16 * theme.textScale }]}>
+                    Connect Bank Account
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             <TouchableOpacity
               style={[styles.signOutButton, { backgroundColor: theme.colors.cardBackground, borderColor: '#EF4444' }]}
@@ -743,5 +794,43 @@ const styles = StyleSheet.create({
   dividerText: {
     fontSize: 14,
     fontWeight: '500' as const,
+  },
+  automaticModeCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 16,
+  },
+  automaticModeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  automaticModeInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  automaticModeTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+  },
+  automaticModeDescription: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    lineHeight: 20,
+  },
+  connectBankButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    padding: 16,
+    borderRadius: 12,
+  },
+  connectBankText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#fff',
   },
 });
