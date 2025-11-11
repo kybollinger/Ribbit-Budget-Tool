@@ -41,15 +41,21 @@ export default function EditProfileScreen() {
       return;
     }
     
-    const filteredGoals = goals.filter(g => g.trim() !== '');
+    const filteredGoals = goals.filter(g => g && g.trim() !== '');
+    console.log('Saving profile with goals:', filteredGoals);
     
-    updateProfile({ 
-      name: name.trim(),
-      financeGoalNotes: notes.trim(),
-      financeGoals: filteredGoals
-    });
-    
-    router.back();
+    try {
+      updateProfile({ 
+        name: name.trim(),
+        financeGoalNotes: notes.trim() || undefined,
+        financeGoals: filteredGoals.length > 0 ? filteredGoals : undefined
+      });
+      
+      router.back();
+    } catch (error) {
+      console.error('Error in handleSave:', error);
+      Alert.alert('Error', 'Failed to save profile. Please try again.');
+    }
   };
 
   const addGoal = () => {

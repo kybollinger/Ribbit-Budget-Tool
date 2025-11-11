@@ -123,20 +123,30 @@ export const [AuthProvider, useAuth] = createContextHook(() => {
     mutationFn: async ({ name, profilePicture, financeGoalNotes, financeGoals, streakData }: { name?: string; profilePicture?: string; financeGoalNotes?: string; financeGoals?: string[]; streakData?: User['streakData'] }) => {
       if (!user) throw new Error('No user to update');
       
+      const updates: Partial<User> = {};
+      if (name !== undefined) updates.name = name;
+      if (profilePicture !== undefined) updates.profilePicture = profilePicture;
+      if (financeGoalNotes !== undefined) updates.financeGoalNotes = financeGoalNotes;
+      if (financeGoals !== undefined) updates.financeGoals = financeGoals;
+      if (streakData !== undefined) updates.streakData = streakData;
+      
       const updatedUser: User = {
         ...user,
-        ...(name !== undefined && { name }),
-        ...(profilePicture !== undefined && { profilePicture }),
-        ...(financeGoalNotes !== undefined && { financeGoalNotes }),
-        ...(financeGoals !== undefined && { financeGoals }),
-        ...(streakData !== undefined && { streakData }),
+        ...updates,
       };
       
+      console.log('Attempting to save user:', updatedUser);
+      
       const stringified = JSON.stringify(updatedUser);
+      console.log('Stringified user data:', stringified.substring(0, 100));
+      
       if (!stringified || stringified === 'undefined' || stringified.startsWith('[object')) {
+        console.error('Invalid stringified data:', stringified);
         throw new Error('Failed to serialize user data');
       }
+      
       await AsyncStorage.setItem(STORAGE_KEY_AUTH, stringified);
+      console.log('User data saved successfully');
       return updatedUser;
     },
     onSuccess: (data) => {
