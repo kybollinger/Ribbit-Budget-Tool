@@ -1,7 +1,6 @@
 import { useBudget } from '@/contexts/BudgetContext';
 import { useAnalysis } from '@/contexts/AnalysisContext';
 import { useAppearance } from '@/contexts/AppearanceContext';
-import { useBankConnection } from '@/contexts/BankConnectionContext';
 import { router } from 'expo-router';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { getCategoryColor } from '@/utils/getCategoryColor';
@@ -30,8 +29,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { getFrogByBudgetStatus } from '@/constants/mascots';
-import ShuffleStack from '@/components/ShuffleStack';
-import { DEMO_TRANSACTIONS } from '@/mocks/demoTransactions';
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
   home: Home,
@@ -47,10 +44,9 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
-  const { categoriesWithTotals, isLoading, getCategorySpendingForMonth, getTransactionsByMonth, addTransaction } = useBudget();
+  const { categoriesWithTotals, isLoading, getCategorySpendingForMonth, getTransactionsByMonth } = useBudget();
   const { selectedDateInfo } = useAnalysis();
   const { theme } = useAppearance();
-  const { automaticMode, isConnected } = useBankConnection();
   const insets = useSafeAreaInsets();
 
   const monthlyTransactions = useMemo(() => {
@@ -91,30 +87,6 @@ export default function DashboardScreen() {
     return getFrogByBudgetStatus(monthlyIncome, monthlyExpenses, categoriesForBudgetCheck);
   }, [monthlyIncome, monthlyExpenses, categoriesForBudgetCheck]);
 
-  const handleApproveTransaction = (transaction: typeof DEMO_TRANSACTIONS[0]) => {
-    console.log('Approved transaction:', transaction);
-    const category = categoriesWithTotals.find((c) => 
-      c.name.toLowerCase().includes(transaction.category.toLowerCase().split(' ')[0])
-    );
-
-    if (category) {
-      addTransaction({
-        type: 'expense',
-        categoryId: category.id,
-        amount: transaction.amount,
-        description: transaction.merchant,
-        vendor: transaction.merchant,
-        date: transaction.date,
-      });
-    }
-  };
-
-  const handleRejectTransaction = (transaction: typeof DEMO_TRANSACTIONS[0]) => {
-    console.log('Rejected transaction:', transaction);
-  };
-
-  const showShuffleStack = automaticMode && isConnected;
-
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
@@ -133,9 +105,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View style={styles.headerTextContainer}>
             <Text style={[styles.headerTitle, { fontSize: 36 * theme.textScale, color: theme.colors.text.primary }]}>Ribbit</Text>
-            <Text style={[styles.headerSubtitle, { fontSize: 16 * theme.textScale, color: theme.colors.text.secondary }]}>
-              {showShuffleStack ? 'Review transactions' : 'Track every dollar'}
-            </Text>
+            <Text style={[styles.headerSubtitle, { fontSize: 16 * theme.textScale, color: theme.colors.text.secondary }]}>Track every dollar</Text>
           </View>
           <View style={styles.frogIconContainer}>
             {frogMascot?.uri ? (
@@ -147,16 +117,6 @@ export default function DashboardScreen() {
             ) : null}
           </View>
         </View>
-
-        {showShuffleStack && (
-          <View style={styles.shuffleStackSection}>
-            <ShuffleStack
-              transactions={DEMO_TRANSACTIONS}
-              onApprove={handleApproveTransaction}
-              onReject={handleRejectTransaction}
-            />
-          </View>
-        )}
 
         <View style={[styles.balanceCard, { backgroundColor: theme.colors.cardBackground }]}>
           <View style={styles.balanceHeader}>
@@ -500,8 +460,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
-  },
-  shuffleStackSection: {
-    marginBottom: 32,
   },
 });
