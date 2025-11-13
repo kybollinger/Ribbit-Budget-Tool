@@ -15,6 +15,7 @@ import {
   Tv,
   PiggyBank,
   MoreHorizontal,
+  Layers,
 } from 'lucide-react-native';
 import React, { useMemo } from 'react';
 import {
@@ -259,6 +260,14 @@ export default function DashboardScreen() {
       >
         <Plus size={28} color="#fff" strokeWidth={2.5} />
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.sortFab, { bottom: 104 + insets.bottom, backgroundColor: theme.colors.cardBackground, borderColor: theme.accent.primary }]}
+        onPress={() => router.push('/transactions-to-sort')}
+        activeOpacity={0.8}
+      >
+        <Layers size={24} color={theme.accent.primary} strokeWidth={2.5} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -460,5 +469,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
+  },
+  sortFab: {
+    position: 'absolute',
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });
