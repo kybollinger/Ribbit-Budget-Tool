@@ -262,11 +262,11 @@ export default function DashboardScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.sortFab, { bottom: 104 + insets.bottom, backgroundColor: theme.colors.cardBackground, borderColor: theme.accent.primary }]}
+        style={[styles.sortFab, { bottom: 104 + insets.bottom, backgroundColor: theme.accent.primary, shadowColor: theme.accent.primary }]}
         onPress={() => router.push('/transactions-to-sort')}
         activeOpacity={0.8}
       >
-        <Layers size={24} color={theme.accent.primary} strokeWidth={2.5} />
+        <Layers size={24} color="#fff" strokeWidth={2.5} />
       </TouchableOpacity>
     </View>
   );
@@ -478,14 +478,14 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    shadowColor: '#000',
+    backgroundColor: '#6366F1',
+    shadowColor: '#6366F1',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });
