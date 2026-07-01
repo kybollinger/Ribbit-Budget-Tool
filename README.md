@@ -1,7 +1,7 @@
 # Ribbit
 ### Personal Budgeting App
 
-Ribbit is a lightweight budgeting app I designed and built with Rork (AI App Builder) after identifying a recurring need through my work as a Housing Navigator. Many of the transitional-age youth I worked with were navigating personal finance for the first time, yet many existing budgeting tools were built around complexity rather than the people they were meant to support.
+Ribbit is a lightweight budgeting app I designed and built after identifying a recurring need through my work as a Housing Navigator. Many of the transitional-age youth I worked with were navigating personal finance for the first time, yet many existing budgeting tools were built around complexity rather than the people they were meant to support.
 
 I built Ribbit to lower that barrier. Instead of asking people to learn another complicated system, the app introduces budgeting as a simple daily habit. By making it easy to log purchases as they happen, users can see where their money is going throughout the month, rather than waiting until the end of the month to realize they've gone over budget. The goal is to build awareness first, creating a foundation for more informed financial decisions over time.
 
